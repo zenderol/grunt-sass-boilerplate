@@ -19,7 +19,7 @@ module.exports = function(grunt) {
 
         // Clean
         clean: {
-            pre: ['styleguide', 'assets/css'],
+            pre: ['styleguide', 'assets/css', 'dist/*'],
             post: ['.sass-cache']
         },
 
@@ -47,6 +47,7 @@ module.exports = function(grunt) {
             static: {                          // Target
                 options: {                       // Target options
                     optimizationLevel: 4,
+                    progressive: true,
                     svgoPlugins: [{ removeViewBox: false }],
                     use: [mozjpeg()]
                 },
@@ -70,9 +71,12 @@ module.exports = function(grunt) {
                 mangle: false
             },
             my_target: {
-                files: {
-                    'dist/index.js': ['src/index.js']
-                }
+                files: [{
+                    expand: true,
+                    cwd: 'src/',
+                    src: '**/*.js',
+                    dest: 'dist/'
+                }]
             }
         },
         compress: {
@@ -84,7 +88,19 @@ module.exports = function(grunt) {
                 expand: true,
                 cwd: 'dist/',
                 src: ['**/*.js'],
-                dest: 'dist/compressed'
+                ext: '.js.gz',
+                dest: 'dist/'
+            }
+        },
+        htmlmin: {                                     // Task
+            dist: {                                      // Target
+                options: {                                 // Target options
+                    removeComments: true,
+                    collapseWhitespace: true
+                },
+                files: {                                   // Dictionary of files
+                    'dist/index.html': 'src/index.html'     // 'destination': 'source'
+                }
             }
         }
 
@@ -98,9 +114,10 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-imagemin');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-compress');
+    grunt.loadNpmTasks('grunt-contrib-htmlmin');
 
     // Register Grunt tasks
-    grunt.registerTask('default', ['clean:pre', 'compass', 'sassdown', 'clean:post']);
-    grunt.registerTask('compess_images', ['imagemin:dynamic']);
+    grunt.registerTask('default', ['clean:pre','uglify','compress_images','compress','htmlmin', 'clean:post']);
+    grunt.registerTask('compress_images', ['imagemin:dynamic']);
   
 };
